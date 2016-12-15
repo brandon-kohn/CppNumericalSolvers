@@ -13,7 +13,18 @@ class NelderMeadSolver : public ISolver<ProblemType, 0> {
   using Superclass = ISolver<ProblemType, 0>;
   using typename Superclass::Scalar;
   using typename Superclass::TVector;
+  using typename Superclass::TCriteria;
   using MatrixType = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+
+  NelderMeadSolver()
+  {}
+
+  NelderMeadSolver(Scalar functionTol, Scalar xTol, const TCriteria& c)
+	  : Superclass(c)
+	  , fTol(functionTol)
+	  , xTol(xTol)
+  {}
+
   /**
    * @brief minimize
    * @details [long description]
@@ -70,9 +81,9 @@ class NelderMeadSolver : public ISolver<ProblemType, 0> {
         if (tmp2 > max2)
           max2 = tmp2;
       }
-      const Scalar tt1 = std::max(Scalar(1.e-04), 10 * std::nextafter(f[index[0]], std::numeric_limits<Scalar>::epsilon()) - f[index[0]]);
-      const Scalar tt2 = std::max(Scalar(1.e-04), 10 * (std::nextafter(x0.col(index[0]).maxCoeff(), std::numeric_limits<Scalar>::epsilon())
-                    - x0.col(index[0]).maxCoeff()));
+	  auto fi0na = std::nextafter(f[index[0]], std::numeric_limits<Scalar>::epsilon());
+      const Scalar tt1 = std::max(fTol, 10 * (fi0na - f[index[0]]));
+      const Scalar tt2 = std::max(xTol, 10 * (std::nextafter(x0.col(index[0]).maxCoeff(), std::numeric_limits<Scalar>::epsilon()) - x0.col(index[0]).maxCoeff()));
 
       // max(||x - shift(x) ||_inf ) <= tol,
       if (max1 <=  tt1) {
@@ -81,7 +92,7 @@ class NelderMeadSolver : public ISolver<ProblemType, 0> {
           break;
         }
       }
-
+	  
       //////////////////////////
 
       // midpoint of the simplex opposite the worst point
@@ -138,7 +149,7 @@ class NelderMeadSolver : public ISolver<ProblemType, 0> {
         }
       }
       sort(index.begin(), index.end(), [&](int a, int b)-> bool { return f[a] < f[b]; });
-      iter++;
+      ++iter;
     }
     x = x0.col(index[0]);
   }
@@ -154,6 +165,9 @@ class NelderMeadSolver : public ISolver<ProblemType, 0> {
     }
 
   }
+
+  Scalar fTol{ 1e-6 };
+  Scalar xTol{ 1e-6 };
 
 };
 

@@ -28,23 +28,21 @@ enum class Status {
 template<typename T>
 class Criteria {
 public:
-    size_t iterations; //!< Maximum number of iterations
-    T xDelta;          //!< Minimum change in parameter vector
-    T fDelta;          //!< Minimum change in cost function
-    T gradNorm;        //!< Minimum norm of gradient vector
-    T condition;       //!< Maximum condition number of Hessian
+	size_t iterations{ 10000 }; //!< Maximum number of iterations
+	T xDelta{ 0 };          //!< Minimum change in parameter vector
+	T fDelta{ 0 };          //!< Minimum change in cost function
+	T gradNorm{ 1e-4 };        //!< Minimum norm of gradient vector
+	T condition{ 0 };       //!< Maximum condition number of Hessian
 
     Criteria() {
-        reset();
     }
 
+	Criteria(size_t iterationsMax)
+		: iterations(iterationsMax)
+	{}
+	
     static Criteria defaults() {
-        Criteria d;
-        d.iterations = 10000;
-        d.xDelta = 0;
-        d.fDelta = 0;
-        d.gradNorm = 1e-4;
-        d.condition = 0;
+		Criteria d;
         return d;
     }
 
